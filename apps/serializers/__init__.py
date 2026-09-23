@@ -5,3 +5,4 @@ from .users import (
     MarkazSerializer, UserCreateSerializer, UserSerializer,
     UserUpdateByAdminSerializer, ProfileSerializer, ProfileUpdateSerializer,
 )
+from .contact import ContactSerializer

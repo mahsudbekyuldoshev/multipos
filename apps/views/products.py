@@ -3,7 +3,9 @@ from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.models import Product
 from apps.serializers import ProductSerializer
+from drf_spectacular.utils import extend_schema
 
+@extend_schema(tags=["Products"])
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer

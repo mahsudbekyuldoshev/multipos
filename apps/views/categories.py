@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 
+@extend_schema(tags=["Categories"])
 class CategoryListView(APIView):
     CATEGORIES = [
         {"key": "qurilish", "label": "Qurilish", "icon": "🧱", "accent": "#4E97C4"},

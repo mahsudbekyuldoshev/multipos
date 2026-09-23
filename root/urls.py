@@ -2,17 +2,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from apps.views.auth import CustomTokenObtainPairView, CustomTokenRefreshView
 
 urlpatterns = (
     [
-        path('api/token/', TokenObtainPairView.as_view()),
-        path('api/token/refresh/', TokenRefreshView.as_view()),
+        path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
+        path('api/token/', CustomTokenObtainPairView.as_view()),
+        path('api/token/refresh/', CustomTokenRefreshView.as_view()),
         path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
         path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
         path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),

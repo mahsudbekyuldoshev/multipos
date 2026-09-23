@@ -4,8 +4,9 @@ from apps.permissions import IsSuperAdmin
 from apps.serializers import (
     UserCreateSerializer, UserSerializer, UserUpdateByAdminSerializer, MarkazSerializer,
 )
+from drf_spectacular.utils import extend_schema
 
-
+@extend_schema(tags=["Users"])
 class UserViewSet(viewsets.ModelViewSet):
     """Superadmin uchun: kassir yaratish/tahrirlash/o'chirish."""
     queryset = User.objects.filter(role="cashier")
@@ -18,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserUpdateByAdminSerializer
         return UserSerializer
 
-
+@extend_schema(tags=["Markazlar"])
 class MarkazViewSet(viewsets.ModelViewSet):
     queryset = Markaz.objects.all()
     serializer_class = MarkazSerializer

@@ -2,8 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from apps.serializers import ProfileSerializer, ProfileUpdateSerializer
+from drf_spectacular.utils import extend_schema
 
-
+@extend_schema(tags=["Profile"])
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -7,6 +7,7 @@ from apps.models import Sale, SaleItem, Product, Settings
 from apps.serializers import SaleSerializer, SaleCheckoutSerializer
 from django.db.models import Sum
 from decimal import Decimal
+from drf_spectacular.utils import extend_schema
 
 class InsufficientStockError(Exception):
     def __init__(self, product, requested):
@@ -14,6 +15,7 @@ class InsufficientStockError(Exception):
         self.requested = requested
         super().__init__(f"Insufficient stock for {product.name}")
 
+@extend_schema(tags=["Sales"])
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer

@@ -8,7 +8,7 @@ load_dotenv(".env")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
@@ -144,10 +144,15 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SORT_OPERATIONS": False,
     "TAGS": [
+        {"name": "Auth", "description": "Login, token olish va yangilash"},
         {"name": "Products", "description": "Mahsulotlar — CRUD, qidiruv, kategoriya bo'yicha filtr, kam qolganlar"},
         {"name": "Categories", "description": "Kategoriyalar ro'yxati (qurilish, elektrika, santexnika, avto)"},
         {"name": "Sales", "description": "Checkout, chek tarixi, bugungi savdo statistikasi"},
         {"name": "Settings", "description": "Do'kon sozlamalari (do'kon nomi va h.k.)"},
+        {"name": "Users", "description": "Kassirlarni boshqarish (faqat superadmin)"},
+        {"name": "Markazlar", "description": "Filial/markazlarni boshqarish (faqat superadmin)"},
+        {"name": "Profile", "description": "O'z profilini ko'rish va tahrirlash"},
+        {"name": "Contact", "description": "Saytdagi murojaat formasi"},
     ],
 }
 
