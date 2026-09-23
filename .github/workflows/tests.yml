@@ -1,0 +1,77 @@
+name: Backend tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: multipos_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_NAME: multipos_test
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      DJANGO_SECRET_KEY: ci-test-secret-key-not-for-production
+      DEBUG: "True"
+
+    steps:
+      - name: Repozitoriyni olish
+        uses: actions/checkout@v4
+
+      - name: Python o'rnatish
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: uv o'rnatish
+        uses: astral-sh/setup-uv@v3
+
+      - name: .env faylini yaratish (load_dotenv uchun)
+        run: |
+          cat > .env << EOF
+          DB_NAME=${DB_NAME}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
+          DB_HOST=${DB_HOST}
+          DB_PORT=${DB_PORT}
+          SECRET_KEY=${SECRET_KEY}
+          DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+          DEBUG=${DEBUG}
+          EOF
+
+      - name: Bog'liqliklarni o'rnatish
+        run: uv sync --frozen
+
+      - name: PostgreSQL tayyor bo'lishini kutish
+        run: |
+          for i in $(seq 1 20); do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres && break
+            sleep 1
+          done
+
+      - name: Django konfiguratsiyasini tekshirish
+        run: uv run python manage.py check
+
+      - name: Testlarni ishga tushirish
+        run: uv run python manage.py test apps -v 2
