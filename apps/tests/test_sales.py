@@ -7,7 +7,7 @@ from apps.models import Product, User
 class SaleTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.user = User.objects.create_user(phone_number="998900000000", password="TestPass123!")
         self.client.force_authenticate(user=self.user)
         self.product = Product.objects.create(
             sku="TEST-001",
