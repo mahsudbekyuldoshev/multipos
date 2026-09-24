@@ -3,3 +3,4 @@ from .sales import Sale, SaleItem
 from .markaz import Markaz
 from .users import User, UserRole
 from .contact import Contact
+from .company import Company, SubscriptionStatus

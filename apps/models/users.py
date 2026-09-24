@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from apps.models.markaz import Markaz
+from apps.models.company import Company
 
 
 class UserRole(models.TextChoices):
@@ -36,6 +37,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.CASHIER)
     markaz = models.ForeignKey(
         Markaz, on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    )
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, null=True, blank=True, related_name="users"
     )
 
     USERNAME_FIELD = "phone_number"

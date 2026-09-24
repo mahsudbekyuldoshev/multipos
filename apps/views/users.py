@@ -12,6 +12,12 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.filter(role="cashier")
     permission_classes = [IsSuperAdmin]
 
+    def get_queryset(self):
+        return User.objects.filter(role="cashier", company=self.request.user.company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
+
     def get_serializer_class(self):
         if self.action == "create":
             return UserCreateSerializer
@@ -24,3 +30,9 @@ class MarkazViewSet(viewsets.ModelViewSet):
     queryset = Markaz.objects.all()
     serializer_class = MarkazSerializer
     permission_classes = [IsSuperAdmin]
+
+    def get_queryset(self):
+        return Markaz.objects.filter(company=self.request.user.company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)

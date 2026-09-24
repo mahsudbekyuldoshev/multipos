@@ -1,6 +1,7 @@
 import datetime
 from django.db import models
 from apps.models import Product
+from apps.models.company import Company
 
 
 class Sale(models.Model):
@@ -9,6 +10,7 @@ class Sale(models.Model):
     total = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     cashier = models.CharField(max_length=100, blank=True, null=True)
     store_name = models.CharField(max_length=255, default="MUSTAHKAM SAVDO MARKAZI")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="sales")
 
     class Meta:
         ordering = ['-date']

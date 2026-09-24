@@ -1,10 +1,11 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from apps.serializers.auth import CompanyAwareTokenObtainPairSerializer
 
 
 @extend_schema(tags=["Auth"])
 class CustomTokenObtainPairView(TokenObtainPairView):
-    pass
+    serializer_class = CompanyAwareTokenObtainPairSerializer
 
 
 @extend_schema(tags=["Auth"])

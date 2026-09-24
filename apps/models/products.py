@@ -1,4 +1,5 @@
 from django.db import models
+from apps.models.company import Company
 
 
 class ProductCategory(models.TextChoices):
@@ -19,7 +20,7 @@ class ProductUnit(models.TextChoices):
 
 
 class Product(models.Model):
-    sku = models.CharField(max_length=50, unique=True, db_index=True)
+    sku = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=255)
     category = models.CharField(
         max_length=20,
@@ -37,9 +38,11 @@ class Product(models.Model):
     date_received = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="products")
 
     class Meta:
         ordering = ['-updated_at']
+        unique_together = ('company', 'sku')
 
     @property
     def low_stock(self):
@@ -51,6 +54,7 @@ class Product(models.Model):
 
 class Settings(models.Model):
     store_name = models.CharField(max_length=255, default="MUSTAHKAM SAVDO MARKAZI")
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name="settings")
 
     class Meta:
         verbose_name_plural = "Settings"

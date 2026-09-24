@@ -15,6 +15,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # Filter by company
+        queryset = queryset.filter(company=self.request.user.company)
+        
         if self.request.query_params.get('lowStockOnly') == 'true':
             queryset = queryset.filter(qty__lte=models.F('min'))
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)

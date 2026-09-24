@@ -15,11 +15,19 @@ class InsufficientStockError(Exception):
         self.requested = requested
         super().__init__(f"Insufficient stock for {product.name}")
 
+class ProductNotFoundError(Exception):
+    def __init__(self, product_id):
+        self.product_id = product_id
+        super().__init__(f"Product {product_id} not found")
+
 @extend_schema(tags=["Sales"])
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
     http_method_names = ['get', 'post', 'head']
+
+    def get_queryset(self):
+        return Sale.objects.filter(company=self.request.user.company)
 
     def create(self, request, *args, **kwargs):
         serializer = SaleCheckoutSerializer(data=request.data)
@@ -33,13 +41,18 @@ class SaleViewSet(viewsets.ModelViewSet):
                 
                 sale = Sale.objects.create(
                     cashier=serializer.validated_data.get('cashier'),
-                    store_name=store_name
+                    store_name=store_name,
+                    company=request.user.company
                 )
                 total = 0
                 
                 for item in items_data:
                     qty = Decimal(str(item['qty']))
-                    product = Product.objects.select_for_update().get(pk=item['product_id'])
+                    try:
+                        product = Product.objects.select_for_update().get(pk=item['product_id'], company=request.user.company)
+                    except Product.DoesNotExist:
+                        raise ProductNotFoundError(item['product_id'])
+
                     if product.qty < qty:
                         raise InsufficientStockError(product, qty)
                     
@@ -67,7 +80,12 @@ class SaleViewSet(viewsets.ModelViewSet):
                 sale.save()
                 
             return Response(SaleSerializer(sale).data, status=status.HTTP_201_CREATED)
-        except InsufficientStockError as e:
+        except (InsufficientStockError, ProductNotFoundError) as e:
+            if isinstance(e, ProductNotFoundError):
+                return Response({
+                    "error": "PRODUCT_NOT_FOUND",
+                    "message": f"Savatdagi mahsulot (id={e.product_id}) topilmadi."
+                }, status=status.HTTP_404_NOT_FOUND)
             return Response({
                 "error": "INSUFFICIENT_STOCK",
                 "message": "Omborda yetarli mahsulot yo'q",
@@ -77,7 +95,7 @@ class SaleViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='stats/today')
     def stats_today(self, request):
         today = timezone.now().date()
-        sales = Sale.objects.filter(date__date=today)
+        sales = Sale.objects.filter(date__date=today, company=request.user.company)
         count = sales.count()
         total = sales.aggregate(Sum('total'))['total__sum'] or 0
         return Response({"count": count, "total": total})
