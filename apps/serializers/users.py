@@ -12,10 +12,21 @@ class MarkazSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
+    subscription_status = serializers.ChoiceField(choices=["active", "inactive"], required=False)
+    subscription_expires_at = serializers.DateField(required=False)
 
     class Meta:
         model = User
-        fields = ["id", "phone_number", "first_name", "last_name", "markaz", "password"]
+        fields = [
+            "id",
+            "phone_number",
+            "first_name",
+            "last_name",
+            "markaz",
+            "password",
+            "subscription_status",
+            "subscription_expires_at",
+        ]
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -30,7 +41,30 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "phone_number", "first_name", "last_name", "role", "markaz", "is_active"]
+        fields = [
+            "id",
+            "phone_number",
+            "first_name",
+            "last_name",
+            "role",
+            "markaz",
+            "is_active",
+            "subscription_status",
+            "subscription_expires_at",
+        ]
+
+
+class UserSubscriptionSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=["active", "inactive"])
+    expires_at = serializers.DateField(required=False)
+    expiresAt = serializers.DateField(required=False)
+
+    def validate(self, attrs):
+        if "expires_at" not in attrs and "expiresAt" not in attrs:
+            raise serializers.ValidationError({"expiresAt": ["Ushbu maydon talab qilinadi."]})
+        if "expires_at" not in attrs:
+            attrs["expires_at"] = attrs["expiresAt"]
+        return attrs
 
 
 class UserUpdateByAdminSerializer(serializers.ModelSerializer):
@@ -38,7 +72,16 @@ class UserUpdateByAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["phone_number", "first_name", "last_name", "markaz", "is_active", "password"]
+        fields = [
+            "phone_number",
+            "first_name",
+            "last_name",
+            "markaz",
+            "is_active",
+            "password",
+            "subscription_status",
+            "subscription_expires_at",
+        ]
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)

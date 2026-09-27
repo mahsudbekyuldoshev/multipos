@@ -1,12 +1,6 @@
 from django.db import models
 from apps.models.company import Company
-
-
-class ProductCategory(models.TextChoices):
-    QURILISH = 'qurilish', 'Qurilish'
-    ELEKTRIKA = 'elektrika', 'Elektrika'
-    SANTEXNIKA = 'santexnika', 'Santexnika'
-    AVTO = 'avto', 'Avto'
+from apps.models.category import Category
 
 
 class ProductUnit(models.TextChoices):
@@ -22,11 +16,7 @@ class ProductUnit(models.TextChoices):
 class Product(models.Model):
     sku = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=255)
-    category = models.CharField(
-        max_length=20,
-        choices=ProductCategory.choices,
-        default=ProductCategory.QURILISH
-    )
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     unit = models.CharField(
         max_length=20,
         choices=ProductUnit.choices,

@@ -1,14 +1,16 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from apps.models import User, Markaz
 from apps.permissions import IsSuperAdmin
 from apps.serializers import (
-    UserCreateSerializer, UserSerializer, UserUpdateByAdminSerializer, MarkazSerializer,
+    UserCreateSerializer, UserSerializer, UserUpdateByAdminSerializer, MarkazSerializer, UserSubscriptionSerializer,
 )
 from drf_spectacular.utils import extend_schema
 
 @extend_schema(tags=["Users"])
 class UserViewSet(viewsets.ModelViewSet):
-    """Superadmin uchun: kassir yaratish/tahrirlash/o'chirish."""
+    """Superadmin uchun: kassir yaratish/tahrirlash/o'chirish va obunani boshqarish."""
     queryset = User.objects.filter(role="cashier")
     permission_classes = [IsSuperAdmin]
 
@@ -24,6 +26,17 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ("update", "partial_update"):
             return UserUpdateByAdminSerializer
         return UserSerializer
+
+    @action(detail=True, methods=['put'], url_path='subscription')
+    def subscription(self, request, pk=None):
+        user = self.get_object()
+        serializer = UserSubscriptionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user.subscription_status = serializer.validated_data['status']
+        user.subscription_expires_at = serializer.validated_data['expires_at']
+        user.save()
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
 
 @extend_schema(tags=["Markazlar"])
 class MarkazViewSet(viewsets.ModelViewSet):

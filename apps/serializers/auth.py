@@ -1,4 +1,3 @@
-from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 

@@ -4,11 +4,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from apps.models import Product
 from apps.serializers import ProductSerializer
 from drf_spectacular.utils import extend_schema
+from apps.permissions import IsSuperAdminOrReadOnly
 
 @extend_schema(tags=["Products"])
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [IsSuperAdminOrReadOnly]
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['name', 'sku']
     filterset_fields = ['category']

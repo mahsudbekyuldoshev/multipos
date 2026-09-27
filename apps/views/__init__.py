@@ -1,7 +1,7 @@
 from .products import ProductViewSet
 from .sales import SaleViewSet
 from .settings import SettingsView
-from .categories import CategoryListView
+from .categories import CategoryViewSet
 from .users import UserViewSet, MarkazViewSet
 from .profile import ProfileView
 from .contact import ContactCreateView
