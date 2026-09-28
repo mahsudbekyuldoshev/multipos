@@ -8,7 +8,7 @@ class SaleTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.company = Company.objects.create(name="Test Company")
-        self.category = Category.objects.create(key="qurilish", label="Qurilish", icon="🧱", accent="#4E97C4")
+        self.category = Category.objects.get(company=self.company, key="qurilish")
         self.user = User.objects.create_user(
             phone_number="998900000000", password="TestPass123!", company=self.company
         )

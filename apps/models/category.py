@@ -1,17 +1,16 @@
 from django.db import models
-from django.utils.text import slugify
+from apps.models.company import Company
 
 
 class Category(models.Model):
-    key = models.CharField(max_length=50, primary_key=True, unique=True, db_index=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="categories")
+    key = models.SlugField(max_length=50)
     label = models.CharField(max_length=100)
-    icon = models.CharField(max_length=10)  # Emoji
-    accent = models.CharField(max_length=7)  # Hex color code
+    icon = models.CharField(max_length=10, blank=True)
+    accent = models.CharField(max_length=20, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.key:
-            self.key = slugify(self.label)
-        super().save(*args, **kwargs)
+    class Meta:
+        unique_together = ("company", "key")
 
     def __str__(self):
-        return self.label
+        return f"{self.label} ({self.company.name})"
