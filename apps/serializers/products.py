@@ -3,7 +3,7 @@ from apps.models import Product, Category
 
 class ProductSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field='key', queryset=Category.objects.all())
-    low_stock = serializers.ReadOnlyField()
+    low_stock = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product

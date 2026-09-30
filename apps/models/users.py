@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from apps.models.markaz import Markaz
-from apps.models.company import Company
+from apps.models.company import Company, SubscriptionStatus
 
 
 class UserRole(models.TextChoices):
@@ -41,6 +41,10 @@ class User(AbstractUser):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, null=True, blank=True, related_name="users"
     )
+    subscription_status = models.CharField(
+        max_length=20, choices=SubscriptionStatus.choices, default=SubscriptionStatus.ACTIVE
+    )
+    subscription_expires_at = models.DateField(null=True, blank=True)
 
     USERNAME_FIELD = "phone_number"
     REQUIRED_FIELDS = []
