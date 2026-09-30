@@ -51,5 +51,8 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    class Meta:
+        ordering = ["-id"]
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.phone_number})"

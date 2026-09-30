@@ -1,3 +1,5 @@
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
@@ -55,14 +57,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSubscriptionSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=["active", "inactive"])
-    expires_at = serializers.DateField(required=False)
-    expiresAt = serializers.DateField(required=False)
+    status = serializers.ChoiceField(choices=["active", "inactive"], required=False)
+    expires_at = serializers.DateField(required=False, allow_null=True)
+    expiresAt = serializers.DateField(required=False, allow_null=True)
+    months = serializers.IntegerField(required=False, allow_null=True)
 
     def validate(self, attrs):
-        if "expires_at" not in attrs and "expiresAt" not in attrs:
-            raise serializers.ValidationError({"expiresAt": ["Ushbu maydon talab qilinadi."]})
-        if "expires_at" not in attrs:
+        if "expires_at" not in attrs and "expiresAt" not in attrs and "months" not in attrs and "status" not in attrs:
+            raise serializers.ValidationError({
+                "status": ["Ushbu maydon talab qilinadi."],
+                "expiresAt": ["Ushbu maydon talab qilinadi."],
+                "months": ["Ushbu maydon talab qilinadi."]
+            })
+        if "months" in attrs and attrs["months"] is not None:
+            months = int(attrs["months"])
+            # Always calculate from today, overwriting old expiration date rather than accumulating
+            attrs["expires_at"] = timezone.now().date() + relativedelta(months=months)
+        elif "expires_at" not in attrs and "expiresAt" in attrs:
             attrs["expires_at"] = attrs["expiresAt"]
         return attrs
 

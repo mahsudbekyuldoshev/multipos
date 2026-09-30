@@ -27,13 +27,15 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserUpdateByAdminSerializer
         return UserSerializer
 
-    @action(detail=True, methods=['put'], url_path='subscription')
+    @action(detail=True, methods=['put', 'patch', 'post'], url_path='subscription')
     def subscription(self, request, pk=None):
         user = self.get_object()
         serializer = UserSubscriptionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user.subscription_status = serializer.validated_data['status']
-        user.subscription_expires_at = serializer.validated_data['expires_at']
+        if "status" in serializer.validated_data:
+            user.subscription_status = serializer.validated_data['status']
+        if "expires_at" in serializer.validated_data:
+            user.subscription_expires_at = serializer.validated_data['expires_at']
         user.save()
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
