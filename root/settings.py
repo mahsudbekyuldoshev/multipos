@@ -16,6 +16,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "0.0.0.0",
     "localhost",
+    "testserver",
 ]
 
 INSTALLED_APPS = [
@@ -79,16 +80,10 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "OPTIONS": {
+            "min_length": 4,
+        },
     },
 ]
 
@@ -179,5 +174,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",      # <-- Vite uchun qo'shildi
     "http://127.0.0.1:5173",    # <-- Vite uchun qo'shildi
 ]
+
+SUBSCRIPTION_PRICE_PER_MONTH = int(os.getenv("SUBSCRIPTION_PRICE_PER_MONTH", 80000))
+FREE_TRIAL_DAYS = int(os.getenv("FREE_TRIAL_DAYS", 11))
 
 # settings.py

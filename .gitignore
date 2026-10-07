@@ -67,4 +67,4 @@ venv.bak/
 .vscode/
 # Operating System Files
 .DS_Store
-Thumbs.db
+Thumbs.dbbackup_*.sql

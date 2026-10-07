@@ -2,9 +2,11 @@ from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from apps.models import Sale, SaleItem, Product, Settings
 from apps.serializers import SaleSerializer, SaleCheckoutSerializer
+from apps.permissions import IsSubscriptionValid
 from django.db.models import Sum
 from decimal import Decimal
 from drf_spectacular.utils import extend_schema
@@ -24,6 +26,7 @@ class ProductNotFoundError(Exception):
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
+    permission_classes = [IsAuthenticated, IsSubscriptionValid]
     http_method_names = ['get', 'post', 'head']
 
     def get_queryset(self):

@@ -2,7 +2,9 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from apps.models import Product, User, Company, Category
+from apps.models import Product, User, Company, Category, SubscriptionStatus
+from datetime import timedelta
+from django.utils import timezone
 
 class SaleTestCase(TestCase):
     def setUp(self):
@@ -10,7 +12,9 @@ class SaleTestCase(TestCase):
         self.company = Company.objects.create(name="Test Company")
         self.category = Category.objects.get(company=self.company, key="qurilish")
         self.user = User.objects.create_user(
-            phone_number="998900000000", password="TestPass123!", company=self.company
+            phone_number="998900000000", password="TestPass123!", company=self.company,
+            subscription_status=SubscriptionStatus.ACTIVE,
+            subscription_expires_at=timezone.localdate() + timedelta(days=30)
         )
         self.client.force_authenticate(user=self.user)
         self.product = Product.objects.create(
