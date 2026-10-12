@@ -42,7 +42,10 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsSuperAdmin]
 
     def get_queryset(self):
-        return User.objects.filter(role="cashier", company=self.request.user.company)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return User.objects.none()
+        return User.objects.filter(role="cashier", managed_by=user)
 
     def create(self, request, *args, **kwargs):
         if not request.user or not request.user.company:
@@ -56,7 +59,10 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         if not self.request.user.company:
             raise serializers.ValidationError({"detail": "Avval administratorni kompaniyaga biriktiring."})
-        return serializer.save(company=self.request.user.company)
+        markaz = serializer.validated_data.get('markaz')
+        if markaz:
+            return serializer.save(company=self.request.user.company)
+        return serializer.save()
 
     def get_serializer_class(self):
         if self.action == "create":

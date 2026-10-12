@@ -11,8 +11,10 @@ class SaleTestCase(TestCase):
         self.client = APIClient()
         self.company = Company.objects.create(name="Test Company")
         self.category = Category.objects.get(company=self.company, key="qurilish")
+        self.admin = User.objects.create_superuser(phone_number="998901111111", company=self.company, password="pass")
         self.user = User.objects.create_user(
             phone_number="998900000000", password="TestPass123!", company=self.company,
+            managed_by=self.admin,
             subscription_status=SubscriptionStatus.ACTIVE,
             subscription_expires_at=timezone.localdate() + timedelta(days=30)
         )

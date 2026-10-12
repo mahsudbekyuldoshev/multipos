@@ -48,6 +48,14 @@ class User(AbstractUser):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, null=True, blank=True, related_name="users"
     )
+    managed_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="managed_cashiers",
+        limit_choices_to={"role": UserRole.SUPERADMIN},
+    )
     subscription_status = models.CharField(
         max_length=20, choices=SubscriptionStatus.choices, default=SubscriptionStatus.ACTIVE
     )
@@ -60,6 +68,13 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ["-id"]
+
+    def save(self, *args, **kwargs):
+        if self.role == UserRole.CASHIER and not self.managed_by and self.company_id:
+            sa = User.objects.filter(role=UserRole.SUPERADMIN, company_id=self.company_id).first()
+            if sa:
+                self.managed_by = sa
+        super().save(*args, **kwargs)
 
     @property
     def is_subscription_valid(self):

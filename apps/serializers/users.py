@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from apps.models import User, Markaz, SubscriptionStatus, UserPlan, FreeTrialUsage, SubscriptionPayment, SubscriptionAuditLog
+from apps.models import User, Markaz, Company, SubscriptionStatus, UserPlan, FreeTrialUsage, SubscriptionPayment, SubscriptionAuditLog
 
 
 def normalize_phone(value):
@@ -66,6 +66,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
         plan = attrs.get('plan', UserPlan.FREE)
         phone = attrs.get('phone_number')
         months = attrs.get('subscription_months')
+        markaz = attrs.get('markaz')
+        request = self.context.get('request')
+        admin = request.user if request and request.user and request.user.is_authenticated else None
+
+        if markaz:
+            if not admin or markaz.company != admin.company:
+                raise serializers.ValidationError({
+                    "markaz": ["Markaz admin kompaniyasiga tegishli bo'lishi shart."]
+                })
 
         if plan == UserPlan.FREE:
             if phone and FreeTrialUsage.objects.filter(phone_number=phone).exists():
@@ -84,6 +93,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         plan = validated_data.pop("plan", UserPlan.FREE)
         months = validated_data.pop("subscription_months", None)
         phone = validated_data.get("phone_number", "")
+        markaz = validated_data.get("markaz")
+        first_name = validated_data.get("first_name", "")
+        last_name = validated_data.get("last_name", "")
+        extra_company = validated_data.pop("company", None)
         request = self.context.get('request')
         admin = request.user if request and request.user and request.user.is_authenticated else None
 
@@ -96,9 +109,31 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 expires_at = today + relativedelta(months=int(months))
                 sub_status = SubscriptionStatus.ACTIVE
 
+            if markaz:
+                company = extra_company or (admin.company if admin else None)
+            else:
+                name_part = f"{first_name or ''} {last_name or ''}".strip()
+                phone_part = (phone or '').strip()
+                if name_part:
+                    comp_name = f"{name_part} {phone_part} (shaxsiy)" if phone_part else f"{name_part} (shaxsiy)"
+                else:
+                    comp_name = f"{phone_part} (shaxsiy)" if phone_part else "Shaxsiy kompaniya"
+
+                company = Company.objects.create(
+                    name=comp_name,
+                    subscription_status=SubscriptionStatus.ACTIVE,
+                    subscription_expires_at=None,
+                )
+                from apps.signals import DEFAULT_CATEGORIES
+                from apps.models import Category
+                for cat in DEFAULT_CATEGORIES:
+                    Category.objects.get_or_create(company=company, key=cat["key"], defaults=cat)
+
             user = User(
                 **validated_data,
                 role="cashier",
+                company=company,
+                managed_by=admin,
                 plan=plan,
                 subscription_status=sub_status,
                 subscription_expires_at=expires_at,
@@ -181,6 +216,23 @@ class UserUpdateByAdminSerializer(serializers.ModelSerializer):
             "is_active",
             "password",
         ]
+
+    def validate(self, attrs):
+        if 'markaz' in attrs:
+            new_markaz = attrs['markaz']
+            old_markaz = self.instance.markaz if self.instance else None
+            if (old_markaz is None and new_markaz is not None) or (old_markaz is not None and new_markaz is None):
+                raise serializers.ValidationError({
+                    "markaz": ["Markazsiz kassirni markazga (yoki aksincha) o'tkazib bo'lmaydi. Yangi kassir yarating."]
+                })
+            if new_markaz is not None:
+                request = self.context.get('request')
+                admin = request.user if request and request.user and request.user.is_authenticated else None
+                if admin and new_markaz.company != admin.company:
+                    raise serializers.ValidationError({
+                        "markaz": ["Markaz admin kompaniyasiga tegishli bo'lishi shart."]
+                    })
+        return attrs
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)

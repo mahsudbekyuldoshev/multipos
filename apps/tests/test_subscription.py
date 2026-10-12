@@ -130,6 +130,7 @@ class SubscriptionTestCase(TestCase):
         today = timezone.localdate()
         cashier = User.objects.create_user(
             phone_number="998905555555", password="Pass123!", role="cashier", company=self.company,
+            managed_by=self.admin,
             plan=UserPlan.FREE, subscription_status=SubscriptionStatus.ACTIVE,
             subscription_expires_at=today + timedelta(days=5)
         )
