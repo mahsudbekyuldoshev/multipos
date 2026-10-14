@@ -73,5 +73,11 @@ jobs:
       - name: Django konfiguratsiyasini tekshirish
         run: uv run python manage.py check
 
+      - name: Migratsiyalar commit qilinganini tekshirish
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Migratsiyalarni toza bazada qo'llash
+        run: uv run python manage.py migrate --noinput
+
       - name: Testlarni ishga tushirish
         run: uv run python manage.py test apps -v 2
