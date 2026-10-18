@@ -43,7 +43,7 @@ class Product(models.Model):
 
 
 class Settings(models.Model):
-    store_name = models.CharField(max_length=255, default="MUSTAHKAM SAVDO MARKAZI")
+    store_name = models.CharField(max_length=255, default="Mening do'konim")
     company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name="settings")
 
     class Meta:

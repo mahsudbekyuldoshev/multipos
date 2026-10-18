@@ -40,7 +40,8 @@ class SaleViewSet(viewsets.ModelViewSet):
         
         try:
             with transaction.atomic():
-                store_name = Settings.objects.first().store_name if Settings.objects.exists() else "MUSTAHKAM SAVDO MARKAZI"
+                company_settings = Settings.objects.filter(company=request.user.company).first()
+                store_name = company_settings.store_name if company_settings else "Mening do'konim"
                 
                 sale = Sale.objects.create(
                     cashier=serializer.validated_data.get('cashier'),

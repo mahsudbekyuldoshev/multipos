@@ -116,8 +116,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 phone_part = (phone or '').strip()
                 if name_part:
                     comp_name = f"{name_part} {phone_part} (shaxsiy)" if phone_part else f"{name_part} (shaxsiy)"
+                    store_name = f"{name_part} do'koni"
                 else:
                     comp_name = f"{phone_part} (shaxsiy)" if phone_part else "Shaxsiy kompaniya"
+                    store_name = "Mening do'konim"
 
                 company = Company.objects.create(
                     name=comp_name,
@@ -125,9 +127,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
                     subscription_expires_at=None,
                 )
                 from apps.signals import DEFAULT_CATEGORIES
-                from apps.models import Category
+                from apps.models import Category, Settings
                 for cat in DEFAULT_CATEGORIES:
                     Category.objects.get_or_create(company=company, key=cat["key"], defaults=cat)
+
+                Settings.objects.create(company=company, store_name=store_name)
 
             user = User(
                 **validated_data,

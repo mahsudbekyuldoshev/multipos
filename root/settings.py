@@ -126,8 +126,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Multipos API",
-    "DESCRIPTION": "Ko'p sohali savdo va ombor boshqaruv tizimi — Multipos backend API",
+    "TITLE": "PPremium API",
+    "DESCRIPTION": "Ko'p sohali savdo va ombor boshqaruv tizimi — PPremium backend API",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_SETTINGS": {

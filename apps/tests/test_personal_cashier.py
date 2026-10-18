@@ -3,7 +3,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from apps.models import Product, Company, User, Category, Markaz, SubscriptionStatus, Sale, SaleItem
+from apps.models import Product, Company, User, Category, Markaz, SubscriptionStatus, Sale, SaleItem, Settings
 from datetime import timedelta
 from django.utils import timezone
 
@@ -349,3 +349,40 @@ class PersonalCashierTenancyTestCase(TestCase):
         self.assertNotEqual(comp_add, comp_aaaaa)
         self.assertEqual(Product.objects.filter(company=comp_add).count(), 0)
         self.assertEqual(Sale.objects.filter(company=comp_add).count(), 0)
+
+    def test_personal_cashier_store_name_settings(self):
+        # (c) existing company settings unchanged
+        old_settings = Settings.objects.create(company=self.company, store_name="Old Main Store")
+
+        client = APIClient()
+        client.force_authenticate(user=self.superadmin)
+
+        # (a) & (b) create two markazless cashiers with names
+        res1 = client.post(reverse('user-list'), {
+            "phone_number": "998991111222", "first_name": "Vali", "last_name": "Aliyev", "password": "Pass123!"
+        }, format='json')
+        self.assertEqual(res1.status_code, 201)
+        cashier1 = User.objects.get(id=res1.json()['id'])
+
+        res2 = client.post(reverse('user-list'), {
+            "phone_number": "998993333444", "first_name": "Botir", "password": "Pass123!"
+        }, format='json')
+        self.assertEqual(res2.status_code, 201)
+        cashier2 = User.objects.get(id=res2.json()['id'])
+
+        # Check store_names
+        s1 = Settings.objects.get(company=cashier1.company)
+        s2 = Settings.objects.get(company=cashier2.company)
+        self.assertEqual(s1.store_name, "Vali Aliyev do'koni")
+        self.assertEqual(s2.store_name, "Botir do'koni")
+
+        # Existing company settings unchanged
+        old_settings.refresh_from_db()
+        self.assertEqual(old_settings.store_name, "Old Main Store")
+
+        # (d) cashier gets company store name via GET /api/v1/settings/
+        client_c1 = APIClient()
+        client_c1.force_authenticate(user=cashier1)
+        res_settings = client_c1.get('/api/v1/settings/')
+        self.assertEqual(res_settings.status_code, 200)
+        self.assertEqual(res_settings.json()['storeName'], "Vali Aliyev do'koni")
